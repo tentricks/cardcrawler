@@ -24,18 +24,21 @@ export class DungeonScene extends Phaser.Scene
         this.createDebugLog(screenHeight);
     }
 
-    public update(_time: number, delta: number): void
+    public update(): void
     {
-        this.player.update(delta);
+        this.player.update();
         this.updateDebugLog();
     }
 
     private updateDebugLog()
     {
-        const playerPosition = this.player.position();
+        const position = this.player.position();
+        const velocity = this.player.velocity();
         this.debugText.setText(
-            `Player position: ${Math.round(playerPosition.x)}, ${Math.round(playerPosition.y)}`
-        );
+        [
+            `position: ${Math.round(position.x)}, ${Math.round(position.y)}`,
+            `velocity: ${Math.round(velocity.x)}, ${Math.round(velocity.y)}`
+        ]);
     }
 
     private createDebugLog(screenHeight: number) {

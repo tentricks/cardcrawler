@@ -5,13 +5,14 @@ export class PlayerCharacter
 
     private static readonly Speed = 220;
 
-    private readonly pawn: Phaser.GameObjects.Rectangle;
+    private readonly view: Phaser.GameObjects.Rectangle;
+    private readonly body: Phaser.Physics.Arcade.Body;
     private readonly cursors: Phaser.Types.Input.Keyboard.CursorKeys;
     private readonly movementKeys: MovementKeys
 
     public constructor(scene: Phaser.Scene, spawnX: number, spawnY: number)
     {
-        this.pawn = scene.add.rectangle(
+        this.view = scene.add.rectangle(
             spawnX,
             spawnY,
             32,
@@ -19,6 +20,13 @@ export class PlayerCharacter
             0x58c7ff
         );
 
+        // attach physics to pawn
+        scene.physics.add.existing(this.view);
+
+        this.body = this.view.body as Phaser.Physics.Arcade.Body;
+        this.body.setCollideWorldBounds(true);
+
+        // initialize controls
         const keyboard = scene.input.keyboard;
         if (keyboard === null)
             throw new Error("Keyboard input plugin is unavailable.");
@@ -34,22 +42,38 @@ export class PlayerCharacter
         ) as MovementKeys;
     }
 
-    public update(delta: number): void
+    public update(): void
     {
         const direction = this.getMovementDirection();
         if (direction.lengthSq() === 0)
+        {
+            this.body.setVelocity(0, 0);
             return;
+        }
 
-        const elapsedSeconds = delta / 1000;
-        const distance = PlayerCharacter.Speed * elapsedSeconds;
+        // physics movement
+        this.body.setVelocity(
+            direction.x * PlayerCharacter.Speed,
+            direction.y * PlayerCharacter.Speed
+        );
 
-        this.pawn.x += direction.x * distance;
-        this.pawn.y += direction.y * distance;
+        //
+        // non-physics movement
+        //
+        // const elapsedSeconds = delta / 1000;
+        // const distance = PlayerCharacter.Speed * elapsedSeconds;
+        // this.view.x += direction.x * distance;
+        // this.view.y += direction.y * distance;
     }
 
     public position(): Phaser.Math.Vector2
     {
-        return new Phaser.Math.Vector2(this.pawn.x, this.pawn.y);
+        return new Phaser.Math.Vector2(this.view.x, this.view.y);
+    }
+
+    public velocity(): Phaser.Math.Vector2
+    {
+        return this.body.velocity;
     }
 
     private getMovementDirection(): Phaser.Math.Vector2
