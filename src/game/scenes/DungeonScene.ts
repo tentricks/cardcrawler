@@ -1,9 +1,11 @@
 import * as Phaser from "phaser";
 import { PlayerCharacter } from "../modules/PlayerCharacter";
+import { PlayerController } from "../modules/PlayerController";
 
 export class DungeonScene extends Phaser.Scene
 {
-    private player!: PlayerCharacter
+    private playerController!: PlayerController
+    private playerCharacter!: PlayerCharacter
     private debugText!: Phaser.GameObjects.Text;
 
     public constructor()
@@ -24,16 +26,17 @@ export class DungeonScene extends Phaser.Scene
         this.createDebugLog(screenHeight);
     }
 
-    public update(): void
+    public update(delta: number): void
     {
-        this.player.update();
+        this.playerController.update();
+        this.playerCharacter.update(delta);
         this.updateDebugLog();
     }
 
     private updateDebugLog()
     {
-        const position = this.player.position();
-        const velocity = this.player.velocity();
+        const position = this.playerCharacter.position();
+        const velocity = this.playerCharacter.velocity();
         this.debugText.setText(
         [
             `position: ${Math.round(position.x)}, ${Math.round(position.y)}`,
@@ -83,9 +86,14 @@ export class DungeonScene extends Phaser.Scene
 
     private createPlayerCharacter(screenWidth: number, screenHeight: number)
     {
-        this.player = new PlayerCharacter(
+        this.playerCharacter = new PlayerCharacter(
             this,
             this.scale.width / 2,
             this.scale.height / 2);
+
+        this.playerController = new PlayerController(
+            this,
+            this.playerCharacter
+        )
     }
 }
