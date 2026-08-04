@@ -1,12 +1,14 @@
 import * as Phaser from "phaser";
 import { PlayerCharacter } from "../modules/PlayerCharacter";
 import { PlayerController } from "../modules/PlayerController";
+import { EnemyManager } from "../modules/EnemyManager";
 
 export class DungeonScene extends Phaser.Scene
 {
     private playerController!: PlayerController
     private playerCharacter!: PlayerCharacter
     private debugText!: Phaser.GameObjects.Text;
+    private enemyManager!: EnemyManager;
 
     public constructor()
     {
@@ -23,13 +25,17 @@ export class DungeonScene extends Phaser.Scene
         this.createBanner(screenWidth);
         this.createBackground(screenWidth, screenHeight);
         this.createPlayerCharacter(screenWidth, screenHeight);
+        this.createEnemySystem();
         this.createDebugLog(screenHeight);
+        this.createDebugInputMapping();
     }
 
     public update(delta: number): void
     {
         this.playerController.update();
         this.playerCharacter.update(delta);
+        this.enemyManager.update();
+
         this.updateDebugLog();
     }
 
@@ -40,21 +46,9 @@ export class DungeonScene extends Phaser.Scene
         this.debugText.setText(
         [
             `position: ${Math.round(position.x)}, ${Math.round(position.y)}`,
-            `velocity: ${Math.round(velocity.x)}, ${Math.round(velocity.y)}`
+            `velocity: ${Math.round(velocity.x)}, ${Math.round(velocity.y)}`,
+            `Enemies: ${this.enemyManager.count}`
         ]);
-    }
-
-    private createDebugLog(screenHeight: number) {
-        this.debugText = this.add.text(
-            16,
-            screenHeight - 32,
-            "",
-            {
-                fontFamily: "monospace",
-                fontSize: "16px",
-                color: "#bbbbbb"
-            }
-        );
     }
 
     private createBanner(screenWidth: number): void
@@ -95,5 +89,40 @@ export class DungeonScene extends Phaser.Scene
             this,
             this.playerCharacter
         )
+    }
+
+    private createEnemySystem(): void
+    {
+        this.enemyManager = new EnemyManager(
+            this,
+            this.playerCharacter
+        );
+
+        this.enemyManager.spawnEnemy(180, 150);
+        this.enemyManager.spawnEnemy(780, 150);
+        this.enemyManager.spawnEnemy(180, 390);
+        this.enemyManager.spawnEnemy(780, 390);
+    }
+
+    private createDebugLog(screenHeight: number) {
+        this.debugText = this.add.text(
+            16,
+            screenHeight - 32,
+            "",
+            {
+                fontFamily: "monospace",
+                fontSize: "16px",
+                color: "#bbbbbb"
+            }
+        );
+    }
+
+    private createDebugInputMapping(): void
+    {
+        this.input.keyboard?.once("keydown-C", ()=>
+        {
+            console.log("Clearing enemies");
+            this.enemyManager.clearAll();
+        });
     }
 }

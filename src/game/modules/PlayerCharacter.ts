@@ -11,11 +11,11 @@ export class PlayerCharacter
 
     private readonly usePhysicsMovement = true;
 
-    public constructor(scene: Phaser.Scene, spawnX: number, spawnY: number)
+    public constructor(scene: Phaser.Scene, x: number, y: number)
     {
         this.view = scene.add.rectangle(
-            spawnX,
-            spawnY,
+            x,
+            y,
             32,
             32,
             0x58c7ff
