@@ -75,4 +75,9 @@ export class PlayerCharacter
         this.view.x += direction.x * distance;
         this.view.y += direction.y * distance;
     }
+
+    public get gameObject(): Phaser.GameObjects.Rectangle
+    {
+        return this.view;
+    }
 }

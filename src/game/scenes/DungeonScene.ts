@@ -3,6 +3,12 @@ import { PlayerCharacter } from "../modules/PlayerCharacter";
 import { PlayerController } from "../modules/PlayerController";
 import { EnemyManager } from "../modules/EnemyManager";
 
+type ArcadeCollisionObject = 
+    Phaser.Types.Physics.Arcade.GameObjectWithBody |
+    Phaser.Physics.Arcade.Body |
+    Phaser.Physics.Arcade.StaticBody |
+    Phaser.Tilemaps.Tile;
+
 export class DungeonScene extends Phaser.Scene
 {
     private playerController!: PlayerController
@@ -26,6 +32,7 @@ export class DungeonScene extends Phaser.Scene
         this.createBackground(screenWidth, screenHeight);
         this.createPlayerCharacter(screenWidth, screenHeight);
         this.createEnemySystem();
+        this.createCollisionRelationships();
         this.createDebugLog(screenHeight);
         this.createDebugInputMapping();
     }
@@ -104,6 +111,31 @@ export class DungeonScene extends Phaser.Scene
         this.enemyManager.spawnEnemy(780, 390);
     }
 
+    private handlePlayerEnemyCollision(
+        _playerObject: ArcadeCollisionObject,
+        _enemyObject: ArcadeCollisionObject)
+    {
+        console.log("Player touched an enemy")
+    }
+
+    private createCollisionRelationships(): void
+    {
+        // setup collision handling between player and enemies
+        this.physics.add.collider(
+            this.playerCharacter.gameObject,
+            this.enemyManager.collisions,
+            this.handlePlayerEnemyCollision,
+            undefined,
+            this
+        );
+
+        // setup collision handling between enemies
+        this.physics.add.collider(
+            this.enemyManager.collisions,
+            this.enemyManager.collisions
+        )
+    }
+
     private createDebugLog(screenHeight: number) {
         this.debugText = this.add.text(
             16,
@@ -126,3 +158,4 @@ export class DungeonScene extends Phaser.Scene
         });
     }
 }
+    

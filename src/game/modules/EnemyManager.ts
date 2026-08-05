@@ -8,18 +8,20 @@ export class EnemyManager
     private readonly scene: Phaser.Scene;
     private readonly playerCharacter: PlayerCharacter;
 
-    private readonly enemies: EnemyCharacter[] = [];
+    private readonly activeEnemies: EnemyCharacter[] = [];
+    private readonly collisionGroup: Phaser.Physics.Arcade.Group;
 
     public constructor(scene: Phaser.Scene, playerCharacter: PlayerCharacter)
     {
         this.scene = scene;
         this.playerCharacter = playerCharacter;
+        this.collisionGroup = scene.physics.add.group();
     }
 
     public update(): void
     {
         const targetPosition = this.playerCharacter.position();
-        for (const enemy of this.enemies)
+        for (const enemy of this.activeEnemies)
             enemy.update(targetPosition);
     }
 
@@ -30,20 +32,45 @@ export class EnemyManager
             x,
             y
         );
-        this.enemies.push(enemy);
+        this.activeEnemies.push(enemy);
+        this.collisionGroup.add(enemy.gameObject);
         return enemy;
+    }
+
+    public removeEnemy(enemy: EnemyCharacter): boolean
+    {
+        const index = this.activeEnemies.indexOf(enemy);
+        if (index === -1)
+            return false;
+
+        this.activeEnemies.splice(index, 1);
+        this.collisionGroup.remove(
+            enemy.gameObject,
+            false,
+            false
+        );
+
+        enemy.destroy();
+
+        return true;
     }
 
     public clearAll(): void
     {
-        for (const enemy of this.enemies)
-            enemy.destroy();
-        
-        this.enemies.length = 0;
+        while (this.activeEnemies.length > 0)
+        {
+            const enemy = this.activeEnemies[this.activeEnemies.length - 1];
+            this.removeEnemy(enemy);
+        }
     }
 
     public get count(): number
     {
-        return this.enemies.length;
+        return this.activeEnemies.length;
+    }
+
+    public get collisions(): Phaser.Physics.Arcade.Group
+    {
+        return this.collisionGroup;
     }
 }

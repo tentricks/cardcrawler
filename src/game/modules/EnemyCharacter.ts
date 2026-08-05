@@ -3,7 +3,6 @@ import * as Phaser from "phaser";
 export class EnemyCharacter
 {
     private static readonly Speed = 90;
-
     private readonly view: Phaser.GameObjects.Rectangle;
     private readonly body: Phaser.Physics.Arcade.Body;
 
@@ -49,6 +48,11 @@ export class EnemyCharacter
             this.view.x,
             this.view.y
         );
+    }
+
+    public get gameObject(): Phaser.GameObjects.Rectangle
+    {
+        return this.view;
     }
 
     public destroy(): void
