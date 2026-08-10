@@ -1,8 +1,16 @@
 import * as Phaser from "phaser"
+import { Pawn } from "./Pawn";
+import { Collider } from "./Collider";
+import { CollisionChannel } from "./CollisionChannel";
+import { CollisionSystem } from "./CollisionSystem";
+import { Projectile } from "./Projectile";
 
-export class PlayerCharacter
+export class PlayerCharacter implements Pawn, Collider
 {
     private static readonly Speed = 220;
+
+    private readonly scene: Phaser.Scene;
+    private readonly collisionSystem: CollisionSystem;
 
     private readonly view: Phaser.GameObjects.Rectangle;
     private readonly body: Phaser.Physics.Arcade.Body;
@@ -11,8 +19,15 @@ export class PlayerCharacter
 
     private readonly usePhysicsMovement = true;
 
-    public constructor(scene: Phaser.Scene, x: number, y: number)
+    public constructor(
+        scene: Phaser.Scene,
+        collisionSystem: CollisionSystem,
+        x: number,
+        y: number)
     {
+        this.scene = scene;
+        this.collisionSystem = collisionSystem;
+        
         this.view = scene.add.rectangle(
             x,
             y,
@@ -25,6 +40,18 @@ export class PlayerCharacter
         scene.physics.add.existing(this.view);
         this.body = this.view.body as Phaser.Physics.Arcade.Body;
         this.body.setCollideWorldBounds(true);
+    }
+    
+    public handleCollision(
+        other: Collider, otherChannel: CollisionChannel): void
+    {
+
+    }
+
+    public handleOverlap(
+        other: Collider, otherChannel: CollisionChannel): void
+    {
+
     }
 
     public update(delta: number): void
@@ -45,12 +72,12 @@ export class PlayerCharacter
             this.applyNonPhysicsMovement(delta, direction);
     }
 
-    public position(): Phaser.Math.Vector2
+    public get position(): Phaser.Math.Vector2
     {
         return new Phaser.Math.Vector2(this.view.x, this.view.y);
     }
 
-    public velocity(): Phaser.Math.Vector2
+    public get velocity(): Phaser.Math.Vector2
     {
         return this.body.velocity;
     }
@@ -76,8 +103,24 @@ export class PlayerCharacter
         this.view.y += direction.y * distance;
     }
 
-    public get gameObject(): Phaser.GameObjects.Rectangle
+    public get gameObject(): Phaser.Types.Physics.Arcade.GameObjectWithBody
     {
-        return this.view;
+        return this.view as Phaser.Types.Physics.Arcade.GameObjectWithBody;
+    }
+
+    public launchProjectile(targetPosition: Phaser.Math.Vector2): void
+    {
+        const direction = targetPosition
+                            .clone()
+                            .subtract(this.position);
+        if (direction.lengthSq() === 0)
+            return;
+
+        const proj = new Projectile(
+            this.scene,
+            this.collisionSystem,
+            this,
+            this.position,
+            direction);
     }
 }

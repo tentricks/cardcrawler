@@ -2,6 +2,8 @@ import * as Phaser from "phaser";
 
 import { EnemyCharacter } from "./EnemyCharacter";
 import { PlayerCharacter } from "./PlayerCharacter";
+import { CollisionSystem } from "./CollisionSystem";
+import { CollisionChannel } from "./CollisionChannel";
 
 export class EnemyManager
 {
@@ -9,18 +11,21 @@ export class EnemyManager
     private readonly playerCharacter: PlayerCharacter;
 
     private readonly activeEnemies: EnemyCharacter[] = [];
-    private readonly collisionGroup: Phaser.Physics.Arcade.Group;
+    private readonly collisionSystem: CollisionSystem;
 
-    public constructor(scene: Phaser.Scene, playerCharacter: PlayerCharacter)
+    public constructor(
+        scene: Phaser.Scene,
+        playerCharacter: PlayerCharacter,
+        collisionSystem: CollisionSystem)
     {
         this.scene = scene;
         this.playerCharacter = playerCharacter;
-        this.collisionGroup = scene.physics.add.group();
+        this.collisionSystem = collisionSystem;
     }
 
     public update(): void
     {
-        const targetPosition = this.playerCharacter.position();
+        const targetPosition = this.playerCharacter.position;
         for (const enemy of this.activeEnemies)
             enemy.update(targetPosition);
     }
@@ -33,7 +38,8 @@ export class EnemyManager
             y
         );
         this.activeEnemies.push(enemy);
-        this.collisionGroup.add(enemy.gameObject);
+        this.collisionSystem.register(CollisionChannel.Pawn, enemy);
+
         return enemy;
     }
 
@@ -44,11 +50,7 @@ export class EnemyManager
             return false;
 
         this.activeEnemies.splice(index, 1);
-        this.collisionGroup.remove(
-            enemy.gameObject,
-            false,
-            false
-        );
+        this.collisionSystem.unregister(CollisionChannel.Pawn, enemy);
 
         enemy.destroy();
 
@@ -67,10 +69,5 @@ export class EnemyManager
     public get count(): number
     {
         return this.activeEnemies.length;
-    }
-
-    public get collisions(): Phaser.Physics.Arcade.Group
-    {
-        return this.collisionGroup;
     }
 }

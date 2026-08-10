@@ -1,6 +1,9 @@
 import * as Phaser from "phaser";
+import { Pawn } from "./Pawn";
+import { Collider } from "./Collider";
+import { CollisionChannel } from "./CollisionChannel";
 
-export class EnemyCharacter
+export class EnemyCharacter implements Pawn, Collider
 {
     private static readonly Speed = 90;
     private readonly view: Phaser.GameObjects.Rectangle;
@@ -21,6 +24,19 @@ export class EnemyCharacter
         this.body = this.view.body as Phaser.Physics.Arcade.Body;
  
         this.body.setCollideWorldBounds(true);
+    }
+
+    public handleCollision(
+        other: Collider, otherChannel: CollisionChannel): void
+    {
+    }
+    public handleOverlap(
+        other: Collider, otherChannel: CollisionChannel): void
+    {
+        if (otherChannel !== CollisionChannel.Projectile)
+            return;
+
+        this.destroy();
     }
 
     public update(targetPosition: Phaser.Math.Vector2): void
@@ -50,9 +66,9 @@ export class EnemyCharacter
         );
     }
 
-    public get gameObject(): Phaser.GameObjects.Rectangle
+    public get gameObject(): Phaser.Types.Physics.Arcade.GameObjectWithBody
     {
-        return this.view;
+        return this.view as Phaser.Types.Physics.Arcade.GameObjectWithBody;
     }
 
     public destroy(): void

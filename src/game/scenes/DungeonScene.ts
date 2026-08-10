@@ -2,6 +2,8 @@ import * as Phaser from "phaser";
 import { PlayerCharacter } from "../modules/PlayerCharacter";
 import { PlayerController } from "../modules/PlayerController";
 import { EnemyManager } from "../modules/EnemyManager";
+import { CollisionSystem } from "../modules/CollisionSystem";
+import { CollisionChannel } from "../modules/CollisionChannel";
 
 type ArcadeCollisionObject = 
     Phaser.Types.Physics.Arcade.GameObjectWithBody |
@@ -15,6 +17,12 @@ export class DungeonScene extends Phaser.Scene
     private playerCharacter!: PlayerCharacter
     private debugText!: Phaser.GameObjects.Text;
     private enemyManager!: EnemyManager;
+    private collisionSystem: CollisionSystem
+
+    private static readonly AttackIntervalMs = 1000;
+    private static readonly AttackRange = 300;
+
+    private nextAttackTime = 0;
 
     public constructor()
     {
@@ -28,11 +36,11 @@ export class DungeonScene extends Phaser.Scene
         const screenWidth = this.scale.width;
         const screenHeight = this.scale.height;
 
-        this.createBanner(screenWidth);
         this.createBackground(screenWidth, screenHeight);
-        this.createPlayerCharacter(screenWidth, screenHeight);
+        this.createBanner(screenWidth);
+        this.createCollisionSystem();
+        this.createPlayerCharacter();
         this.createEnemySystem();
-        this.createCollisionRelationships();
         this.createDebugLog(screenHeight);
         this.createDebugInputMapping();
     }
@@ -42,14 +50,34 @@ export class DungeonScene extends Phaser.Scene
         this.playerController.update();
         this.playerCharacter.update(delta);
         this.enemyManager.update();
+        this.updateAutomaticAttack(delta);
 
         this.updateDebugLog();
     }
 
+    private updateAutomaticAttack(delta: number): void
+    {
+        if (delta < this.nextAttackTime)
+            return;
+
+        const target = this.collisionSystem.findNearest(
+            CollisionChannel.Pawn,
+            this.playerCharacter.position,
+            DungeonScene.AttackRange,
+            collider => collider !== this.playerCharacter);
+
+        if (target === null)
+            return;
+
+        this.playerCharacter.launchProjectile(target.position)
+        this.nextAttackTime =
+            delta + DungeonScene.AttackIntervalMs;
+    }
+
     private updateDebugLog()
     {
-        const position = this.playerCharacter.position();
-        const velocity = this.playerCharacter.velocity();
+        const position = this.playerCharacter.position;
+        const velocity = this.playerCharacter.velocity;
         this.debugText.setText(
         [
             `position: ${Math.round(position.x)}, ${Math.round(position.y)}`,
@@ -85,24 +113,28 @@ export class DungeonScene extends Phaser.Scene
                 0x55556a);
     }
 
-    private createPlayerCharacter(screenWidth: number, screenHeight: number)
+    private createPlayerCharacter()
     {
         this.playerCharacter = new PlayerCharacter(
             this,
+            this.collisionSystem,
             this.scale.width / 2,
             this.scale.height / 2);
 
         this.playerController = new PlayerController(
             this,
-            this.playerCharacter
-        )
+            this.playerCharacter);
+        
+        this.collisionSystem.register(
+            CollisionChannel.Pawn, this.playerCharacter);
     }
 
     private createEnemySystem(): void
     {
         this.enemyManager = new EnemyManager(
             this,
-            this.playerCharacter
+            this.playerCharacter,
+            this.collisionSystem
         );
 
         this.enemyManager.spawnEnemy(180, 150);
@@ -118,22 +150,9 @@ export class DungeonScene extends Phaser.Scene
         console.log("Player touched an enemy")
     }
 
-    private createCollisionRelationships(): void
+    private createCollisionSystem(): void
     {
-        // setup collision handling between player and enemies
-        this.physics.add.collider(
-            this.playerCharacter.gameObject,
-            this.enemyManager.collisions,
-            this.handlePlayerEnemyCollision,
-            undefined,
-            this
-        );
-
-        // setup collision handling between enemies
-        this.physics.add.collider(
-            this.enemyManager.collisions,
-            this.enemyManager.collisions
-        )
+        this.collisionSystem = new CollisionSystem(this);
     }
 
     private createDebugLog(screenHeight: number) {
