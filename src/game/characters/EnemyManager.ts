@@ -2,8 +2,8 @@ import * as Phaser from "phaser";
 
 import { EnemyCharacter } from "./EnemyCharacter";
 import { PlayerCharacter } from "./PlayerCharacter";
-import { CollisionSystem } from "./CollisionSystem";
-import { CollisionChannel } from "./CollisionChannel";
+import { CollisionSystem } from "../collision/CollisionSystem";
+import { CollisionChannel } from "../collision/CollisionChannel";
 
 export class EnemyManager
 {

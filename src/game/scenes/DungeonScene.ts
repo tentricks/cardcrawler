@@ -1,9 +1,9 @@
 import * as Phaser from "phaser";
-import { PlayerCharacter } from "../modules/PlayerCharacter";
-import { PlayerController } from "../modules/PlayerController";
-import { EnemyManager } from "../modules/EnemyManager";
-import { CollisionSystem } from "../modules/CollisionSystem";
-import { CollisionChannel } from "../modules/CollisionChannel";
+import { PlayerCharacter } from "../characters/PlayerCharacter";
+import { PlayerController } from "../characters/PlayerController";
+import { EnemyManager } from "../characters/EnemyManager";
+import { CollisionSystem } from "../collision/CollisionSystem";
+import { CollisionChannel } from "../collision/CollisionChannel";
 
 type ArcadeCollisionObject = 
     Phaser.Types.Physics.Arcade.GameObjectWithBody |

@@ -1,8 +1,8 @@
 import * as Phaser from "phaser";
 
-import { Collider } from "./Collider";
-import { CollisionChannel } from "./CollisionChannel";
-import { CollisionSystem } from "./CollisionSystem";
+import { Collider } from "../collision/Collider";
+import { CollisionChannel } from "../collision/CollisionChannel";
+import { CollisionSystem } from "../collision/CollisionSystem";
 
 export interface ProjectileSource
 {

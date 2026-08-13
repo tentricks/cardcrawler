@@ -1,9 +1,9 @@
 import * as Phaser from "phaser"
 import { Pawn } from "./Pawn";
-import { Collider } from "./Collider";
-import { CollisionChannel } from "./CollisionChannel";
-import { CollisionSystem } from "./CollisionSystem";
-import { Projectile } from "./Projectile";
+import { Collider } from "../collision/Collider";
+import { CollisionChannel } from "../collision/CollisionChannel";
+import { CollisionSystem } from "../collision/CollisionSystem";
+import { Projectile } from "../modules/Projectile";
 
 export class PlayerCharacter implements Pawn, Collider
 {
